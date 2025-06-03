@@ -34,13 +34,13 @@ export default function AppRouter() {
       />
       
 
-    <Route path="/admin/compras" element={<AdminComprasPage />} />
-    <Route path="/admin/usuarios" element={<AdminUsuariosPage />} />
-    <Route path="/admin/libros" element={<AdminLibrosPage />} />
-    <Route path="/admin/generos" element={<AdminGenerosPage />} />
-    <Route path="/admin/libros/crear" element={<NuevoLibroPage />} />
-    <Route path="/admin/libros/editar/:id" element={<EditarLibroPage />} />
-    <Route path="/checkout/:id" element={<CheckoutPage />} />
+    <Route path="/admin/compras" element={<PrivateRoute><AdminComprasPage /></PrivateRoute>} />
+    <Route path="/admin/usuarios" element={<PrivateRoute><AdminUsuariosPage /></PrivateRoute>} />
+    <Route path="/admin/libros" element={<PrivateRoute><AdminLibrosPage /></PrivateRoute>} />
+    <Route path="/admin/generos" element={<PrivateRoute><AdminGenerosPage /></PrivateRoute>} />
+    <Route path="/admin/libros/crear" element={<PrivateRoute><NuevoLibroPage /></PrivateRoute>} />
+    <Route path="/admin/libros/editar/:id" element={<PrivateRoute><EditarLibroPage /></PrivateRoute>} />
+    <Route path="/checkout/:id" element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
     <Route path="/mis-compras" element={<PrivateRoute><MisComprasPage /></PrivateRoute>} />
     </Routes>
   );

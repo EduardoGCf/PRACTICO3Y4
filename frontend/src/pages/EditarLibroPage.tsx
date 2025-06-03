@@ -14,6 +14,7 @@ export default function EditarLibroPage() {
     isbn: '',
   });
   const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [generos, setGeneros] = useState<Genero[]>([]);
   const [generosSeleccionados, setGenerosSeleccionados] = useState<number[]>([]);
@@ -22,32 +23,34 @@ export default function EditarLibroPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  useEffect(() => {
     const cargarDatos = async () => {
       if (!id) return;
-
       try {
-
         const [generosData, libro] = await Promise.all([
           getGeneros(),
-          getLibroById(Number(id))
+          getLibroById(Number(id)),
         ]);
-
         setGeneros(generosData);
         setForm(libro);
-
         if (libro.generos) {
-          const generosIds = libro.generos.map(g => g.id);
-          setGenerosSeleccionados(generosIds);
+          setGenerosSeleccionados(libro.generos.map(g => g.id));
         }
-
       } catch (err) {
-        console.error('Error cargando datos:', err);
         setError('No se pudieron cargar los datos');
       } finally {
         setLoading(false);
       }
     };
-
     cargarDatos();
   }, [id]);
 
@@ -62,13 +65,11 @@ export default function EditarLibroPage() {
   };
 
   const handleGeneroChange = (generoId: number) => {
-    setGenerosSeleccionados(prev => {
-      if (prev.includes(generoId)) {
-        return prev.filter(id => id !== generoId);
-      } else {
-        return [...prev, generoId];
-      }
-    });
+    setGenerosSeleccionados(prev =>
+      prev.includes(generoId)
+        ? prev.filter(id => id !== generoId)
+        : [...prev, generoId]
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,33 +80,26 @@ export default function EditarLibroPage() {
       setError('Debes seleccionar al menos un género');
       return;
     }
-
     setSubmitting(true);
     setError(null);
 
     try {
       const data = new FormData();
-
       Object.entries(form).forEach(([key, value]) => {
         if (key === "portada" || key === "generos") return;
         if (typeof value !== "undefined" && value !== null) {
           data.append(key, value.toString());
         }
       });
-
       generosSeleccionados.forEach(generoId => {
         data.append('generos_ids', generoId.toString());
       });
-
       if (file) {
         data.append('portada', file);
       }
-
       await editarLibro(Number(id), data);
       navigate('/admin/libros');
     } catch (err: any) {
-      console.error('Error completo:', err);
-
       if (err?.response?.data) {
         const errorData = err.response.data;
         if (typeof errorData === 'object') {
@@ -129,71 +123,75 @@ export default function EditarLibroPage() {
     }
   };
 
-  if (loading) return <div className="p-4">Cargando...</div>;
+  if (loading) return (
+    <div className="flex justify-center items-center min-h-40 text-indigo-600 font-bold">
+      <div className="animate-spin h-7 w-7 border-4 border-indigo-200 border-t-indigo-600 rounded-full mr-3"></div>
+      Cargando...
+    </div>
+  );
 
   return (
-    <div className="max-w-xl mx-auto p-4 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-4">Editar Libro</h2>
+    <div className="max-w-xl mx-auto p-8 mt-6 bg-white rounded-2xl shadow-2xl border border-gray-100">
+      <h2 className="text-3xl font-extrabold mb-6 text-indigo-800 text-center">Editar Libro</h2>
       {error && (
-        <div className="text-red-600 mb-4 p-3 bg-red-100 rounded border border-red-300">
+        <div className="text-red-700 mb-4 p-3 bg-red-100 rounded-xl border border-red-200 animate-pulse text-center">
           <pre className="whitespace-pre-wrap text-sm">{error}</pre>
         </div>
       )}
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <input
           name="titulo"
           placeholder="Título"
-          className="border p-2 rounded focus:ring-2 focus:ring-blue-500"
+          className="border border-indigo-200 p-3 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           value={form.titulo || ''}
           onChange={handleChange}
           required
         />
-
         <input
           name="autor"
           placeholder="Autor"
-          className="border p-2 rounded focus:ring-2 focus:ring-blue-500"
+          className="border border-indigo-200 p-3 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           value={form.autor || ''}
           onChange={handleChange}
           required
         />
-
         <input
           name="precio"
           placeholder="Precio"
           type="number"
           step="0.01"
           min="0.01"
-          className="border p-2 rounded focus:ring-2 focus:ring-blue-500"
+          className="border border-indigo-200 p-3 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           value={form.precio || ''}
           onChange={handleChange}
           required
         />
-
         <input
           name="isbn"
           placeholder="ISBN"
-          className="border p-2 rounded focus:ring-2 focus:ring-blue-500"
+          className="border border-indigo-200 p-3 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           value={form.isbn || ''}
           onChange={handleChange}
           required
         />
-
-        <div className="border p-3 rounded">
-          <label className="block text-sm font-medium mb-2">
-            Géneros (selecciona al menos uno) *:
+        <div className="border border-indigo-200 p-4 rounded-xl">
+          <label className="block text-sm font-semibold mb-2 text-indigo-700">
+            Géneros <span className="text-red-500">*</span>
           </label>
           <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
             {generos.map(genero => (
-              <label key={genero.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+              <label
+                key={genero.id}
+                className={`flex items-center gap-2 cursor-pointer hover:bg-indigo-50 p-2 rounded-lg transition
+                  ${generosSeleccionados.includes(genero.id) ? "bg-indigo-50" : ""}`}
+              >
                 <input
                   type="checkbox"
                   checked={generosSeleccionados.includes(genero.id)}
                   onChange={() => handleGeneroChange(genero.id)}
-                  className="rounded"
+                  className="rounded accent-indigo-500 w-5 h-5"
                 />
-                <span className="text-sm">{genero.nombre}</span>
+                <span className="text-base">{genero.nombre}</span>
               </label>
             ))}
           </div>
@@ -203,48 +201,55 @@ export default function EditarLibroPage() {
             </div>
           )}
         </div>
-
         <div>
-          <label className="block text-sm font-medium mb-1">
-            Portada:
+          <label className="block text-sm font-semibold mb-2 text-indigo-700">
+            Portada
           </label>
           <input
             name="portada"
             type="file"
-            className="border p-2 rounded w-full focus:ring-2 focus:ring-blue-500"
+            className="border border-indigo-200 p-2 rounded-xl w-full focus:ring-2 focus:ring-indigo-400"
             onChange={handleChange}
             accept="image/*"
           />
-          {form.portada && typeof form.portada === 'string' && (
-            <div className="mt-2">
-              <img
-                src={form.portada}
-                alt="Portada actual"
-                className="w-32 h-32 object-cover rounded border"
-              />
-              <p className="text-sm text-gray-600 mt-1">Portada actual</p>
-            </div>
-          )}
-          {file && (
-            <div className="mt-2 text-sm text-blue-600">
-              Nueva portada seleccionada: {file.name}
-            </div>
-          )}
+          <div className="flex flex-row gap-4 mt-2">
+            {form.portada && typeof form.portada === 'string' && (
+              <div className="flex flex-col items-center">
+                <img
+                  src={form.portada}
+                  alt="Portada actual"
+                  className="w-28 h-40 object-cover rounded border shadow"
+                />
+                <span className="text-xs text-gray-500 mt-1">Portada actual</span>
+              </div>
+            )}
+            {file && preview && (
+              <div className="flex flex-col items-center">
+                <img
+                  src={preview}
+                  alt="Nueva portada"
+                  className="w-28 h-40 object-cover rounded border shadow"
+                />
+                <span className="text-xs text-green-600 mt-1">{file.name}</span>
+              </div>
+            )}
+          </div>
         </div>
-
         <textarea
           name="descripcion"
           placeholder="Descripción"
-          className="border p-2 rounded h-24 resize-vertical focus:ring-2 focus:ring-blue-500"
+          className="border border-indigo-200 p-3 rounded-xl h-28 resize-vertical focus:ring-2 focus:ring-indigo-400 text-base"
           value={form.descripcion || ''}
           onChange={handleChange}
         />
         <button
           type="submit"
-          className="bg-yellow-600 text-white p-3 rounded hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className={`bg-yellow-500 hover:bg-yellow-600 text-white font-bold p-3 rounded-xl shadow-lg transition-all text-lg
+            disabled:opacity-60 disabled:cursor-not-allowed ${submitting ? "animate-pulse" : ""}
+          `}
           disabled={submitting}
         >
-          {submitting ? 'Guardando...' : 'Guardar Cambios'}
+          {submitting ? 'Guardando cambios...' : 'Guardar Cambios'}
         </button>
       </form>
     </div>

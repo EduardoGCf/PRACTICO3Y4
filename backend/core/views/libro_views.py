@@ -1,6 +1,3 @@
-
-# core/views.py
-
 from django.middleware.csrf import get_token
 from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import action, api_view, permission_classes

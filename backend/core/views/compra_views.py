@@ -1,5 +1,3 @@
-# core/views.py
-
 from django.middleware.csrf import get_token
 from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import action, api_view, permission_classes
@@ -19,8 +17,6 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 User = get_user_model()
 # ---------- Compra ----------
-# core/views.py - CompraViewSet actualizado
-
 class CompraViewSet(viewsets.ModelViewSet):
     queryset = Compra.objects.all().select_related('usuario').prefetch_related('items__libro')
     serializer_class = CompraSerializer

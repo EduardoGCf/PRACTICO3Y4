@@ -11,7 +11,7 @@ export interface Libro {
   isbn: string;
   descripcion: string;
   portada: string;
-  generos: any[];
+  generos: Genero[];
   ventas_totales: number;
 }
 

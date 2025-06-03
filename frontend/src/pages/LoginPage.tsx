@@ -1,4 +1,3 @@
-// frontend/src/pages/LoginPage.tsx
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -17,48 +16,52 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-
-    console.log('[LoginPage] Enviando al backend:', {
-      username: form.username,
-      password: form.password,
-    });
-
     try {
       await loginUser(form.username, form.password);
-      navigate('/'); 
+      navigate('/');
     } catch {
       setError('Credenciales inválidas');
     }
   };
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Iniciar Sesión</h1>
-      {error && <p className="text-red-600 mb-2">{error}</p>}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          name="username"
-          type="text"
-          placeholder="Username"
-          value={form.username}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
-        />
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
-        />
-        <button
-          type="submit"
-          className="bg-green-600 text-white py-2 rounded hover:bg-green-700"
-        >
-          Entrar
-        </button>
-      </form>
+    <div className="min-h-[70vh] flex items-center justify-center bg-gradient-to-br from-green-50 to-white">
+      <div className="w-full max-w-md mx-auto p-8 bg-white rounded-2xl shadow-2xl border border-gray-100">
+        <h1 className="text-3xl font-extrabold mb-6 text-green-700 text-center">
+          Iniciar Sesión
+        </h1>
+        {error && (
+          <div className="text-red-700 mb-4 p-3 bg-red-100 rounded-lg border border-red-200 animate-pulse text-center">
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            name="username"
+            type="text"
+            autoComplete="username"
+            placeholder="Usuario"
+            value={form.username}
+            onChange={handleChange}
+            className="border border-green-200 p-3 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
+          <input
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            placeholder="Contraseña"
+            value={form.password}
+            onChange={handleChange}
+            className="border border-green-200 p-3 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
+          <button
+            type="submit"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold p-3 rounded-xl shadow transition-all text-lg"
+          >
+            Entrar
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

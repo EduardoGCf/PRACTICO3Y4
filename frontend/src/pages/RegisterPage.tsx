@@ -29,49 +29,61 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Registrar Usuario</h1>
-      {error && <p className="text-red-600 mb-2">{error}</p>}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          name="username"
-          type="text"
-          placeholder="Username"
-          value={form.username}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
-        />
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
-        />
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
-        />
-        <input
-          name="password2"
-          type="password"
-          placeholder="Confirmar Password"
-          value={form.password2}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          Registrarme
-        </button>
-      </form>
+    <div className="min-h-[70vh] flex items-center justify-center bg-gradient-to-br from-indigo-50 to-white">
+      <div className="w-full max-w-md mx-auto p-8 bg-white rounded-2xl shadow-2xl border border-gray-100">
+        <h1 className="text-3xl font-extrabold mb-6 text-indigo-800 text-center">
+          Crear Cuenta
+        </h1>
+        {error && (
+          <div className="text-red-700 mb-4 p-3 bg-red-100 rounded-lg border border-red-200 animate-pulse text-center">
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            name="username"
+            type="text"
+            autoComplete="username"
+            placeholder="Usuario"
+            value={form.username}
+            onChange={handleChange}
+            className="border border-indigo-200 p-3 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+          <input
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="Correo electrónico"
+            value={form.email}
+            onChange={handleChange}
+            className="border border-indigo-200 p-3 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+          <input
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            placeholder="Contraseña"
+            value={form.password}
+            onChange={handleChange}
+            className="border border-indigo-200 p-3 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+          <input
+            name="password2"
+            type="password"
+            autoComplete="new-password"
+            placeholder="Confirmar contraseña"
+            value={form.password2}
+            onChange={handleChange}
+            className="border border-indigo-200 p-3 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+          <button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded-xl shadow transition-all text-lg"
+          >
+            Registrarme
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

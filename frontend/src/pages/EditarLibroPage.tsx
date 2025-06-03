@@ -1,5 +1,3 @@
-
-// EditarLibroPage.tsx - Corregido
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getLibroById, editarLibro } from '../api/libroService';
@@ -26,23 +24,22 @@ export default function EditarLibroPage() {
   useEffect(() => {
     const cargarDatos = async () => {
       if (!id) return;
-      
+
       try {
-        // Cargar géneros y libro en paralelo
+
         const [generosData, libro] = await Promise.all([
           getGeneros(),
           getLibroById(Number(id))
         ]);
-        
+
         setGeneros(generosData);
         setForm(libro);
-        
-        // Establecer géneros seleccionados
+
         if (libro.generos) {
           const generosIds = libro.generos.map(g => g.id);
           setGenerosSeleccionados(generosIds);
         }
-        
+
       } catch (err) {
         console.error('Error cargando datos:', err);
         setError('No se pudieron cargar los datos');
@@ -50,7 +47,7 @@ export default function EditarLibroPage() {
         setLoading(false);
       }
     };
-    
+
     cargarDatos();
   }, [id]);
 
@@ -78,7 +75,6 @@ export default function EditarLibroPage() {
     e.preventDefault();
     if (!id) return;
 
-    // Validaciones
     if (generosSeleccionados.length === 0) {
       setError('Debes seleccionar al menos un género');
       return;
@@ -89,21 +85,18 @@ export default function EditarLibroPage() {
 
     try {
       const data = new FormData();
-      
-      // Agregar campos del libro (excepto portada que se maneja aparte)
+
       Object.entries(form).forEach(([key, value]) => {
         if (key === "portada" || key === "generos") return;
         if (typeof value !== "undefined" && value !== null) {
           data.append(key, value.toString());
         }
       });
-      
-      // Agregar géneros seleccionados
+
       generosSeleccionados.forEach(generoId => {
         data.append('generos_ids', generoId.toString());
       });
-      
-      // Agregar archivo si se seleccionó uno nuevo
+
       if (file) {
         data.append('portada', file);
       }
@@ -112,7 +105,7 @@ export default function EditarLibroPage() {
       navigate('/admin/libros');
     } catch (err: any) {
       console.error('Error completo:', err);
-      
+
       if (err?.response?.data) {
         const errorData = err.response.data;
         if (typeof errorData === 'object') {
@@ -146,48 +139,47 @@ export default function EditarLibroPage() {
           <pre className="whitespace-pre-wrap text-sm">{error}</pre>
         </div>
       )}
-      
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input 
-          name="titulo" 
-          placeholder="Título" 
-          className="border p-2 rounded focus:ring-2 focus:ring-blue-500" 
-          value={form.titulo || ''} 
-          onChange={handleChange} 
-          required 
-        />
-        
-        <input 
-          name="autor" 
-          placeholder="Autor" 
-          className="border p-2 rounded focus:ring-2 focus:ring-blue-500" 
-          value={form.autor || ''} 
-          onChange={handleChange} 
-          required 
-        />
-        
-        <input 
-          name="precio" 
-          placeholder="Precio" 
-          type="number" 
-          step="0.01"
-          min="0.01"
-          className="border p-2 rounded focus:ring-2 focus:ring-blue-500" 
-          value={form.precio || ''} 
-          onChange={handleChange} 
-          required 
-        />
-        
-        <input 
-          name="isbn" 
-          placeholder="ISBN" 
-          className="border p-2 rounded focus:ring-2 focus:ring-blue-500" 
-          value={form.isbn || ''} 
-          onChange={handleChange} 
-          required 
+        <input
+          name="titulo"
+          placeholder="Título"
+          className="border p-2 rounded focus:ring-2 focus:ring-blue-500"
+          value={form.titulo || ''}
+          onChange={handleChange}
+          required
         />
 
-        {/* Selector de géneros */}
+        <input
+          name="autor"
+          placeholder="Autor"
+          className="border p-2 rounded focus:ring-2 focus:ring-blue-500"
+          value={form.autor || ''}
+          onChange={handleChange}
+          required
+        />
+
+        <input
+          name="precio"
+          placeholder="Precio"
+          type="number"
+          step="0.01"
+          min="0.01"
+          className="border p-2 rounded focus:ring-2 focus:ring-blue-500"
+          value={form.precio || ''}
+          onChange={handleChange}
+          required
+        />
+
+        <input
+          name="isbn"
+          placeholder="ISBN"
+          className="border p-2 rounded focus:ring-2 focus:ring-blue-500"
+          value={form.isbn || ''}
+          onChange={handleChange}
+          required
+        />
+
         <div className="border p-3 rounded">
           <label className="block text-sm font-medium mb-2">
             Géneros (selecciona al menos uno) *:
@@ -216,18 +208,18 @@ export default function EditarLibroPage() {
           <label className="block text-sm font-medium mb-1">
             Portada:
           </label>
-          <input 
-            name="portada" 
-            type="file" 
-            className="border p-2 rounded w-full focus:ring-2 focus:ring-blue-500" 
-            onChange={handleChange} 
-            accept="image/*" 
+          <input
+            name="portada"
+            type="file"
+            className="border p-2 rounded w-full focus:ring-2 focus:ring-blue-500"
+            onChange={handleChange}
+            accept="image/*"
           />
           {form.portada && typeof form.portada === 'string' && (
             <div className="mt-2">
-              <img 
-                src={form.portada} 
-                alt="Portada actual" 
+              <img
+                src={form.portada}
+                alt="Portada actual"
                 className="w-32 h-32 object-cover rounded border"
               />
               <p className="text-sm text-gray-600 mt-1">Portada actual</p>
@@ -239,17 +231,16 @@ export default function EditarLibroPage() {
             </div>
           )}
         </div>
-        
-        <textarea 
-          name="descripcion" 
-          placeholder="Descripción" 
-          className="border p-2 rounded h-24 resize-vertical focus:ring-2 focus:ring-blue-500" 
-          value={form.descripcion || ''} 
+
+        <textarea
+          name="descripcion"
+          placeholder="Descripción"
+          className="border p-2 rounded h-24 resize-vertical focus:ring-2 focus:ring-blue-500"
+          value={form.descripcion || ''}
           onChange={handleChange}
         />
-        
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="bg-yellow-600 text-white p-3 rounded hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           disabled={submitting}
         >

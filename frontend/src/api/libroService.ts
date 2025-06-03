@@ -11,8 +11,8 @@ export async function getLibros(): Promise<Libro[]> {
   return res.data;
 }
 
-export async function getLibrosPorGenero(generoId: number): Promise<Libro[]> {
-  const res = await api.get(`/libros/?genero=${generoId}`);
+export async function getLibrosPorGenero(generoId: number) {
+  const res = await api.get(`/generos/${generoId}/libros/`);
   return res.data;
 }
 

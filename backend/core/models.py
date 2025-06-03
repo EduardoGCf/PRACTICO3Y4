@@ -25,10 +25,10 @@ class Libro(models.Model):
 
 class Compra(models.Model):
     ESTADOS = [
-        ('CARRITO', 'Carrito activo'),            # Usuario agregando items
-        ('PENDIENTE', 'Pendiente de validación'), # Compra enviada, esperando admin
-        ('CONFIRMADA', 'Pago confirmado'),        # Admin confirmó
-        ('RECHAZADA', 'Pago rechazado'),         # Admin rechazó
+        ('CARRITO', 'Carrito activo'),
+        ('PENDIENTE', 'Pendiente de validación'),
+        ('CONFIRMADA', 'Pago confirmado'),
+        ('RECHAZADA', 'Pago rechazado'),
     ]
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='compras')
     fecha = models.DateTimeField(auto_now_add=True)

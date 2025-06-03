@@ -29,8 +29,6 @@ class CompraViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_staff:
-            return Compra.objects.exclude(estado='CARRITO')
         return Compra.objects.filter(usuario=user)
 
 
@@ -137,7 +135,7 @@ class CompraViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'No autorizado'}, status=status.HTTP_403_FORBIDDEN)
         if item.compra.estado != 'CARRITO':
             return Response(
-                {'detail': 'Solo se pueden eliminar items de carritos activos'}, 
+                {'detail': 'Solo se pueden eliminar items de carritos activos'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         item.delete()

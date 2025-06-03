@@ -1,8 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from .views import GeneroViewSet, LibroViewSet, CompraViewSet, UsuarioViewSet
-from .auth_views import (
+from .views import (
+    GeneroViewSet,
+    LibroViewSet,
+    CompraViewSet,
+    UsuarioViewSet,
     RegisterView,
     LoginView,
     LogoutView,

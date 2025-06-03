@@ -7,8 +7,8 @@ from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
-from .models import Genero, Libro, Compra, ItemCompra
-from .serializers import (
+from ..models import Genero, Libro, Compra, ItemCompra
+from ..serializers import (
     GeneroSerializer,
     LibroSerializer,
     CompraSerializer,
@@ -18,108 +18,10 @@ from .serializers import (
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 User = get_user_model()
-
-
-# ---------- Género ----------
-class GeneroViewSet(viewsets.ModelViewSet):
-    queryset = Genero.objects.all()
-    serializer_class = GeneroSerializer
-
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            return [AllowAny()]
-        return [IsAdminUser()]
-
-
-# ---------- Libro ----------
-
-
-class LibroViewSet(viewsets.ModelViewSet):
-    queryset = Libro.objects.all().prefetch_related('generos')
-    serializer_class = LibroSerializer
-    parser_classes = [MultiPartParser, FormParser, JSONParser]
-
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'top_libros']:
-            return [AllowAny()]
-        return [IsAdminUser()]
-
-    def create(self, request, *args, **kwargs):
-        generos_ids = request.data.getlist('generos_ids', [])
-        mutable_data = request.data.copy()
-        if 'generos_ids' in mutable_data:
-            del mutable_data['generos_ids']
-        serializer = self.get_serializer(data=mutable_data)
-        serializer.is_valid(raise_exception=True)
-        libro = serializer.save()
-        if generos_ids:
-            try:
-                generos_ids = [int(gid) for gid in generos_ids]
-                generos = Genero.objects.filter(id__in=generos_ids)
-                libro.generos.set(generos)
-            except (ValueError, Genero.DoesNotExist) as e:
-                return Response({'detail': 'Géneros inválidos'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(self.get_serializer(libro).data, status=status.HTTP_201_CREATED)
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        generos_ids = request.data.getlist('generos_ids', [])
-        mutable_data = request.data.copy()
-        if 'generos_ids' in mutable_data:
-            del mutable_data['generos_ids']
-        serializer = self.get_serializer(instance, data=mutable_data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        libro = serializer.save()
-        if generos_ids:
-            try:
-                generos_ids = [int(gid) for gid in generos_ids]
-                generos = Genero.objects.filter(id__in=generos_ids)
-                libro.generos.set(generos)
-            except (ValueError, Genero.DoesNotExist) as e:
-                return Response({'detail': 'Géneros inválidos'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        return Response(self.get_serializer(libro).data)
-
-    @action(detail=False, methods=['get'], permission_classes=[AllowAny], url_path='top')
-    def top_libros(self, request):
-        top10 = Libro.objects.order_by('-ventas_totales')[:10]
-        serializer = self.get_serializer(top10, many=True)
-        return Response(serializer.data)
-
-
-class LibroSerializer(serializers.ModelSerializer):
-    generos = GeneroSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Libro
-        fields = ['id', 'titulo', 'autor', 'precio', 'isbn', 'descripcion', 'portada', 'generos', 'ventas_totales']
-    def validate_precio(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("El precio debe ser mayor que 0")
-        return value
-    def validate_isbn(self, value):
-        if not value or len(value.strip()) < 10:
-            raise serializers.ValidationError("ISBN debe tener al menos 10 caracteres")
-        return value.strip()
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        request = self.context.get('request')
-        if instance.portada and request:
-            representation['portada'] = request.build_absolute_uri(instance.portada.url)
-        return representation
-
 # ---------- Compra ----------
 # core/views.py - CompraViewSet actualizado
 
 class CompraViewSet(viewsets.ModelViewSet):
-    """
-    ModelViewSet para Compra.
-    - Usuarios pueden listar/crear/retrieve sus propias compras.
-    - Admin (is_staff) puede ver todas las compras y actualizar estado.
-    - El carrito es independiente de las compras enviadas.
-    """
     queryset = Compra.objects.all().select_related('usuario').prefetch_related('items__libro')
     serializer_class = CompraSerializer
     permission_classes = [IsAuthenticated]
@@ -132,14 +34,15 @@ class CompraViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_staff:
-            return Compra.objects.all()
+            return Compra.objects.exclude(estado='CARRITO')
         return Compra.objects.filter(usuario=user)
+
 
     def perform_create(self, serializer):
         user = self.request.user
         items_data = self.request.data.get('items', [])
         total = 0
-        
+
         for item in items_data:
             libro_obj = Libro.objects.get(pk=item['libro_id'])
             total += libro_obj.precio * item.get('cantidad', 1)
@@ -150,20 +53,19 @@ class CompraViewSet(viewsets.ModelViewSet):
     def mi_carrito(self, request):
         user = request.user
         carrito = Compra.objects.filter(
-            usuario=user, 
+            usuario=user,
             estado='CARRITO'
         ).first()
-        
         if not carrito:
             carrito = Compra.objects.create(
-                usuario=user, 
-                total=0, 
-                estado='CARRITO' 
+                usuario=user,
+                total=0,
+                estado='CARRITO'
             )
 
         serializer = self.get_serializer(carrito)
         return Response(serializer.data)
-    
+
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], url_path='agregar-items')
     def agregar_items(self, request, pk=None):
         carrito = self.get_object()
@@ -277,15 +179,3 @@ class CompraViewSet(viewsets.ModelViewSet):
                 libro.save()
 
         return super().partial_update(request, *args, **kwargs)
-    
-# ---------- ver usuario (solo admin) ----------
-class UsuarioViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def obtain_csrf_token(request):
-    get_token(request)
-    return Response({'detail': 'CSRF cookie set'})

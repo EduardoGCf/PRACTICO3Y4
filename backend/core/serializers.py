@@ -10,7 +10,7 @@ class GeneroSerializer(serializers.ModelSerializer):
         fields = ['id', 'nombre']
 
 class LibroSerializer(serializers.ModelSerializer):
-    generos = GeneroSerializer(many=True)
+    generos = GeneroSerializer(many=True,read_only=True)
 
     class Meta:
         model = Libro
